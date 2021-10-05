@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "outDir": "./dist",	// 可不写，因为webpack会配置输出路径
+      "target": "ES6",
+      "noImplicitAny": true
+    },
+    // **代表所有目录 *代表所有文件
+    "include": [
+      "src/**/*"
+    ]
+  }
+  
