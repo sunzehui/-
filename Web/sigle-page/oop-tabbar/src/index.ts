@@ -1,139 +1,90 @@
 import "./css/reset.css"
 import "./css/style.css"
-import TabsController from "./tabs-controller"
-import {panelObject} from "./interface/panel-object";
+import EventEmitter from "events"
+
+// 传入Tabs构造器：Option类型
+interface Option {
+    nav: string,
+    panel: string,
+    activeIndex?: number
+}
+
+// 自己手写了个选择题，勉强用
+const $ = (selector: string) => Array.prototype.slice.call(document.querySelectorAll(selector)) as Array<HTMLElement>;
 
 
-class Component_child extends HTMLElement {
+class Tabs {
+    private readonly options: Option;
+    private panels: Array<HTMLElement>;
+    private navs: Array<HTMLElement>;
+    private fromTab: number;
+    event: EventEmitter;
 
-    static get TAG_NAME() {
-        return 'tab-panel';
-    };
-
-    constructor() {
-        super();
-
+    static defaultOptions = {
+        activeIndex: 0
     }
-}
 
-customElements.define(Component_child.TAG_NAME, Component_child);
+    constructor(opt: Option) {
+        this.options = Object.assign(Tabs.defaultOptions, opt);
+        this.fromTab = this.options.activeIndex;
+        // 向外开放切换事件
+        this.event = new EventEmitter();
 
-class Component extends HTMLElement {
-    private readonly shadow: ShadowRoot;
+        this.init();
+        this.bindEvent()
+        this.switchTo(this.fromTab);
+    }
 
-    static get TAG_NAME() {
-        return 'tab-bar';
-    };
-
-    panels: Array<panelObject> = []
-
-    constructor() {
-        super();
-        this.shadow = this.attachShadow({mode: 'open'})
-
-        this.classList.add("tab")
-        const style = document.createElement("style")
-        style.innerHTML = `
-        
-.tab-bar {
-    display: flex;
-    height: var(--bar-height);
-}
-.tab-bar .bar {
-    flex: 1;
-    text-align: center;
-    font-size: 1.5rem;
-    padding: 1rem 0;
-    cursor: pointer;
-}
-
-.bar.active {
-    border-bottom: grey 2px solid;
-
-}
-
-
-.tab-content {
-    height: calc(100% - var(--bar-height));
-    width: 100%;
-    position: relative;
-}
-
-.tab-content .content {
-    height: 100%;
-    width: 100%;
-    opacity: 0;
-
-    transition: none;
-
-    /*visibility: hidden;*/
-    position: absolute;
-    font-size: 2rem;
-    display: grid;
-    place-items: center;
-}
-
-.tab-content .content.active {
-    /*visibility: visible;*/
-    opacity: 1;
-    transition: opacity .3s ease-in-out;
-
-}`
-        this.shadow.appendChild(style)
-        this.panels = this.collectPanels()
-        const tab = new TabsController({
-            panels: this.panels
+    // 给节点加上标记，方便操作
+    private init() {
+        this.panels = $(this.options.panel)
+        this.navs = $(this.options.nav)
+        this.navs.forEach((elem, index) => {
+            elem.dataset.index = String(index);
         })
-        this.layoutElement()
-
+        this.panels.forEach((elem, index) => {
+            elem.dataset.index = String(index);
+        })
     }
 
-    layoutElement() {
-        const nodeFragment = document.createDocumentFragment();
-        console.log(this.panels)
-
-        const bars = document.createElement("div");
-        bars.classList.add("tab-bar")
-
-        const tabs = document.createElement("div");
-        tabs.classList.add("tab-content")
-
-        for (let obj of this.panels) {
-            bars.appendChild(obj.nav)
-            tabs.appendChild(obj.panel)
-        }
-
-        nodeFragment.appendChild(bars)
-        nodeFragment.appendChild(tabs)
-        this.shadow.appendChild(nodeFragment.cloneNode(true));
+    // 给nav绑定点击事件
+    private bindEvent() {
+        this.navs.forEach(elem => {
+            elem.onclick = () => {
+                this.switchTo(+elem.dataset.index);
+            }
+        })
     }
 
-    collectPanels() {
-        const panels = []
-        for (let child of this.children) {
-            const t_nav = this.createNav(child.getAttribute("label"))
-            const t_panel = this.createPanel(child.innerHTML);
-            panels.push({
-                nav: t_nav,
-                panel: t_panel
-            });
-        }
-        return panels;
+    // 切换nav操作
+    private switchNav(index: number) {
+        // 记录上一次点击的nav下标，将其移出active，下同
+        this.navs[this.fromTab].classList.remove("active")
+        this.navs[index].classList.add("active")
     }
 
-    createNav(content: string) {
-        const nav = document.createElement("li");
-        nav.setAttribute("class", "bar");
-        nav.innerHTML = content
-        return nav;
+    // 切换panel操作
+    private switchPanel(index: number) {
+        this.panels[this.fromTab].classList.remove("active");
+        this.panels[index].classList.add("active");
     }
 
-    createPanel(content: string) {
-        const panel = document.createElement("div");
-        panel.setAttribute("class", "content");
-        panel.innerHTML = content
-        return panel;
+    // 切换tab
+    private switchTo(toIndex: number) {
+        this.switchNav(toIndex);
+        this.switchPanel(toIndex);
+        this.event.emit("change", {
+            toIndex, fromIndex: this.fromTab
+        })
+        // 更新上一次点击的下标
+        this.fromTab = toIndex;
     }
 }
 
-customElements.define(Component.TAG_NAME, Component);
+const tab = new Tabs({
+    nav: ".tab-bar .bar",
+    panel: ".tab-content .content"
+})
+tab.event.on("change", (obj) => {
+    console.log(obj)
+})
