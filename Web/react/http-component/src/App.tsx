@@ -6,7 +6,7 @@ import Get from "./component/Get.jsx";
 function App() {
   return (
     <Get
-      url="http://localhost:8080/api/zhihu"
+      url="http://localhost:3000/api/zhihu"
       loading={() => {
         return (
           <div className="container">
