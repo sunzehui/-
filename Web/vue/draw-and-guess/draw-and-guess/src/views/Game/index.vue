@@ -2,19 +2,20 @@
   <el-container>
     <!-- 布局：头部 -->
     <el-header height="30">
-      <app-header />
+      <app-header/>
     </el-header>
 
     <!-- 布局：主体 -->
     <el-container>
       <!-- 左边 -->
       <el-aside width="400px" class="left-panel">
-        <app-side-panel />
+        <app-side-pen/>
+        <app-side-panel/>
       </el-aside>
 
       <!-- 右边 -->
       <el-main>
-        <app-stage />
+        <app-stage/>
       </el-main>
     </el-container>
   </el-container>
@@ -24,19 +25,20 @@
 import AppHeader from './components/app-header'
 import AppStage from './components/app-stage'
 import AppSidePanel from './components/app-side-panel'
+import AppSidePen from './components/app-side-pen'
+
 export default {
   components: {
     AppHeader,
     AppStage,
-    AppSidePanel
+    AppSidePanel,
+    AppSidePen
   },
   created() {
     this.$store.dispatch('sendUserEnter')
   },
 
-  methods: {
-
-  }
+  methods: {}
 }
 </script>
 

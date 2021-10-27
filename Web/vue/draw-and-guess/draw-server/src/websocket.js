@@ -2,13 +2,14 @@ const io = require('socket.io')
 
 module.exports = httpServer => {
 
-    const server = io(httpServer)
+    const server = io(httpServer, { cors: true })
     const user2socket = {}
     const socket2user = {}
 
     let currentGame = null
 
     server.on('connection', socket => {
+
 
         // 【事件】检查昵称是否已占用
         // ------------------------------------------------------------
@@ -29,8 +30,10 @@ module.exports = httpServer => {
             socket.emit('room_info', {
                 nicknames: Object.keys(user2socket),
                 holder: currentGame?.holder,
-                lines: currentGame?.lines || []
+                lines: currentGame?.lines || [],
+                question: currentGame?.question || ""
             })
+
 
             // 发送新进用户给其他用户
             socket.broadcast.emit('user_enter', nickname)
@@ -57,7 +60,7 @@ module.exports = httpServer => {
 
         // 【事件】申请开始游戏
         // ------------------------------------------------------------
-        socket.on('start_game', (finalAnswer) => {
+        socket.on('start_game', (question) => {
             if (currentGame) {
                 // 游戏已经处于开始状态了
                 socket.emit('already_started', currentGame.holder)
@@ -68,12 +71,23 @@ module.exports = httpServer => {
             currentGame = {
                 success: false,
                 holder: socket2user[socket.id],
-                finalAnswer,
-                lines: []
+                lines: [],
+                question
             }
 
-            server.of('/').emit('game_started', currentGame.holder)
+            // 发送题目给其他用户
+
+            console.log(question, currentGame.holder);
+
+            server.of('/').emit('game_started', currentGame)
         })
+
+        socket.on("update_box_pos", (newPos) => {
+            if (!currentGame) return
+
+            socket.broadcast.emit("box_pos_updated", newPos)
+        })
+
 
         // 【事件】申请终止游戏
         // ------------------------------------------------------------
@@ -88,7 +102,7 @@ module.exports = httpServer => {
 
         // 【事件】用户回答答案
         // ------------------------------------------------------------
-        socket.on('answer_game', (answer) => {
+        socket.on('answer_game', () => {
             if (!currentGame) return
 
             if (currentGame.success) {
@@ -96,18 +110,18 @@ module.exports = httpServer => {
                     alreadyDone: true
                 })
             } else {
-                const success = currentGame.finalAnswer === answer
+                // const success = currentGame.finalAnswer === answer
 
-                if (success) {
-                    currentGame.success = true
-                }
+                // if (success) {
+                //     currentGame.success = true
+                // }
 
-                server.of('/').emit('game_answered', {
-                    alreadyDone: false,
-                    success,
-                    nickname: socket2user[socket.id],
-                    answer
-                })
+                // server.of('/').emit('game_answered', {
+                //     alreadyDone: false,
+                //     success,
+                //     nickname: socket2user[socket.id],
+                //     answer
+                // })
             }
         })
 

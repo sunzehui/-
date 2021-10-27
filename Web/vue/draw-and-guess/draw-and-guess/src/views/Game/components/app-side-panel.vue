@@ -13,80 +13,78 @@
     <!-- 按钮工具栏 -->
     <div class="panel-area button-area">
       <el-button
-        v-if="!isGameStarted"
-        type="primary"
-        size="small"
-        icon="el-icon-edit"
-        @click="startGameHandler"
-      >主持游戏</el-button>
+          v-if="!isGameStarted"
+          type="primary"
+          size="small"
+          icon="el-icon-edit"
+          @click="startGameHandler"
+      >主持游戏
+      </el-button>
 
       <el-button
-        v-if="isGameStarted && nickname === holder"
-        type="warning"
-        size="small"
-        icon="el-icon-delete"
-        @click="stopGameHandler"
-      >终止游戏</el-button>
+          v-if="isGameStarted && nickname === holder"
+          type="warning"
+          size="small"
+          icon="el-icon-delete"
+          @click="stopGameHandler"
+      >终止游戏
+      </el-button>
+
 
       <el-button
-        v-if="isGameStarted && nickname !== holder"
-        type="success"
-        size="small"
-        icon="el-icon-magic-stick"
-        @click="answerGameHandler"
-      >猜答案</el-button>
-
-      <el-button
-        type="danger"
-        size="small"
-        icon="el-icon-switch-button"
-        @click="exitHandler"
-      >退出游戏</el-button>
+          type="danger"
+          size="small"
+          icon="el-icon-switch-button"
+          @click="exitHandler"
+      >退出游戏
+      </el-button>
     </div>
 
     <!-- 弹出框：主持人设置答案 -->
     <el-dialog
-      title="请设置答案"
-      :visible.sync="resultDialogVisible"
-      width="30%"
+        title="请设置答案"
+        :visible.sync="resultDialogVisible"
+        width="420px"
     >
-      <el-input v-model="expectImageName" placeholder="请输入您的答案" />
-
+      <el-tabs v-model="patten" type="card" :stretch="true">
+        <el-tab-pane label="文本" name="text">
+          <el-input v-model="questionText"></el-input>
+        </el-tab-pane>
+        <el-tab-pane label="图片" name="image">
+          <el-upload
+              drag
+              multiple
+              :auto-upload="false"
+              action="#"
+              :file-list="fileList"
+              :on-change="uploadImg">
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+            <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+          </el-upload>
+        </el-tab-pane>
+      </el-tabs>
       <span slot="footer" class="dialog-footer">
         <el-button @click="resultDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="saveDialogHandler">确 定</el-button>
       </span>
     </el-dialog>
 
-    <!-- 弹出框：答题人设置答案 -->
-    <el-dialog
-      title="请填写答案"
-      :visible.sync="answerDialogVisible"
-      width="30%"
-    >
-      <el-input v-model="inputImageName" placeholder="请输入您的答案" />
-
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="answerDialogVisible = false">取 消</el-button>
-        <el-button
-          type="primary"
-          @click="saveAnswerDialogHandler"
-        >确 定</el-button>
-      </span>
-    </el-dialog>
   </el-card>
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
+import {mapGetters, mapState} from 'vuex'
+import {v4 as uuidv4} from 'uuid';
 
 export default {
   data() {
     return {
       resultDialogVisible: false,
-      expectImageName: '',
-      answerDialogVisible: false,
-      inputImageName: ''
+
+      patten: 'text',
+      questionText: '',
+      fileList: []
     }
   },
 
@@ -96,12 +94,16 @@ export default {
   },
 
   methods: {
+    uploadImg(f, fl) {
+      this.fileList = fl
+    },
+
     startGameHandler() {
       // 开始游戏
       // 1. 显示弹框
       this.resultDialogVisible = true
       // 2. 清空输入框内容
-      this.expectImageName = ''
+      this.questionText = ''
     },
 
     stopGameHandler() {
@@ -113,35 +115,36 @@ export default {
       })
     },
 
-    answerGameHandler() {
-      this.answerDialogVisible = true
-      this.inputImageName = ''
-    },
-
     saveDialogHandler() {
-      // 1. 校验答案是否为空
-      if (!this.expectImageName) {
-        this.$message.error('答案不能为空哦!')
-        return
+
+      const question = {
+        patten: this.patten
       }
+      // 1. 判断输入类型
+      if (this.patten === "text") {
+        question.content = this.questionText
+      } else {
+        question.content = this.fileList.map(elem => ({
+          data: elem.raw,
+          config: {
+            x: 10,
+            y: 10,
+            scaleX: 1,
+            scaleY: 1,
+            rotation: 0,
+            name: uuidv4()
+          }
+        }))
+      }
+
+
       // 2. 发送开始游戏的申请
-      this.$store.dispatch('sendStartGame', this.expectImageName)
+      this.$store.dispatch('sendStartGame', question)
 
       // 3. 关闭弹框
       this.resultDialogVisible = false
     },
 
-    saveAnswerDialogHandler() {
-      // 1. 检查答案是否为空
-      if (!this.inputImageName) {
-        this.$message.error('答案不能为空')
-        return
-      }
-      // 2. 将答案发送到服务器
-      this.$store.dispatch('sendAnswerGame', this.inputImageName)
-      // 3. 关闭弹出框
-      this.answerDialogVisible = false
-    },
 
     exitHandler() {
       this.$confirm('是否退出游戏', '温馨提示').then(() => {
@@ -159,4 +162,5 @@ export default {
 .panel-area {
   margin: 10px 0;
 }
+
 </style>
