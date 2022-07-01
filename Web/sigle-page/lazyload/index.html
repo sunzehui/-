@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+
+    <lazy-load>
+        <img src="circles-menu-1.gif"
+            data-src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fww3.sinaimg.cn%2Fmw690%2F006TJIlxly1gugghcobezj60rs0rswh402.jpg&refer=http%3A%2F%2Fwww.sina.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1637380332&t=e320ff21a7fe28e78e3fa35102949883"
+            alt="">
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <img src="circles-menu-1.gif" data-src="
+        https://img0.baidu.com/it/u=3125494493,422467566&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500">
+
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+
+        <img src="circles-menu-1.gif" data-src="https://img2.baidu.com/it/u=2841758496,3916796935&fm=26&fmt=auto"
+            alt="">
+
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+        <h1>哈哈哈哈</h1>
+
+        <img src="circles-menu-1.gif"
+            data-src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fziti.cndesign.com%2Fupload%2Ffont%2F2016-08-02%2Fe91a77e65f1f46988b72032ec3e68157.jpg&refer=http%3A%2F%2Fziti.cndesign.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1637377956&t=24c626df0f5ebcded6071bc361b38409" />
+    </lazy-load>
+</body>
+<script>
+    function debounce(cb, delay = 2000) {
+        // 间隔一定时期内，再次执行，则重新计算执行时间
+        let id = null;
+        return function () {
+            clearTimeout(id);
+            id = setTimeout(() => {
+                cb.apply(this, arguments);
+            }, delay)
+        }
+    }
+    function throttle(cb, delay = 2000) {
+        // 在一段时间内重复执行，只会按照最小执行间隔时间段执行。
+        let id = null;
+        return function () {
+            if (!id) {
+                id = setTimeout(() => {
+                    cb.apply(this, arguments)
+                    id = null
+                }, delay)
+            }
+        }
+    }
+    window.customElements.define("lazy-load", class extends HTMLElement {
+        constructor() {
+            super()
+            const children = Array.from(this.children).filter((elem) => elem.tagName === "IMG");
+            console.log(children);
+            const clientHeight = window.innerHeight
+            document.addEventListener("scroll", throttle(function (e) {
+                children.forEach(elem => {
+                    const scrollHeight = document.documentElement.scrollTop;
+                    if (elem.offsetTop < clientHeight + scrollHeight) {
+                        elem.src = elem.dataset.src;
+                    }
+                })
+            }))
+        }
+    })
+
+</script>
+
+</html>

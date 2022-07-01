@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"
+        integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <input type="file" value="上传图片">
+    <div class="image-container">
+
+    </div>
+</body>
+<script>
+    function arrayBufferToBase64(buffer) {
+        var binary = '';
+        var bytes = new Uint8Array(buffer);
+        var len = bytes.byteLength;
+        for (var i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+    }
+    const socket = io("ws://localhost:3000");
+    socket.on("connect", () => {
+        console.log(socket.connected); // true
+    });
+    const file = document.querySelector('input[type=file]')
+    file.onchange = function (e) {
+        socket.emit("image_upload", e.target.files[0])
+    }
+    socket.on("image_send", file => {
+
+        console.log(file);
+        const img = document.createElement('img')
+        img.src = 'data:image/jpeg;base64,' + (arrayBufferToBase64(file));
+        document.querySelector('.image-container').appendChild(img)
+    })
+</script>
+
+</html>

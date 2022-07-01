@@ -1,0 +1,10 @@
+{
+  "name": "printDecorator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@types/js-beautify": "^1.13.3",
+    "js-beautify": "^1.14.0"
+  }
+}
