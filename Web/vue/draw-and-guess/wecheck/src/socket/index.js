@@ -2,9 +2,11 @@ import io from 'socket.io-client'
 import store from '@/store'
 import {MessageBox, Notification} from 'element-ui'
 
-// const socket = io("http://0.0.0.0:3000")
-const socket = io("http://wecheck.foggy.shop:3000")
-// const socket = io()
+const env = process.env.NODE_ENV
+const url = env === 'development' ?'localhost:3000':"0.0.0.0:3000"
+const socket = io(url,{
+  'Access-Control-Allow-Credentials':true
+});
 
 socket.on('connect', () => {
     console.log('>>>>>>> 和服务器已建立连接')
